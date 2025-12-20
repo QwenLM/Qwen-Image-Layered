@@ -20,6 +20,10 @@ We are excited to introduce **Qwen-Image-Layered**, a model capable of decomposi
 - 2025.12.19: We released Qwen-Image-Layered! Check our [Blog](https://qwenlm.github.io/blog/qwen-image-layered) for more details!
 - 2025.12.18: We released our [Research Paper](https://arxiv.org/abs/2512.15603) on Arxiv!
 
+> [!NOTE]
+> - The text prompt is intended to describe the overall content of the input image—including elements that may be partially occluded (e.g., you may specify the text hidden behind a foreground object). It is not designed to control the semantic content of individual layers explicitly.
+> - The released weights are specifically fine-tuned for the image-to-multi-RGBA decomposition task. As a result, while the model supports text-conditioned inference, its performance on text-to-multi-RGBA generation is limited.
+
 ## Quick Start
 
 1. Make sure your transformers>=4.51.3 (Supporting Qwen2.5-VL)
