@@ -207,7 +207,17 @@ with gr.Blocks() as demo:
         outputs=gallery,
     )
 
-demo.launch(
-    server_name="0.0.0.0",
-    server_port=7869,
-)
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--share", action="store_true", help="Create a public Gradio link")
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=7869)
+    args = parser.parse_args()
+
+    demo.launch(
+        share=args.share,
+        server_name=args.host,
+        server_port=args.port,
+    )
