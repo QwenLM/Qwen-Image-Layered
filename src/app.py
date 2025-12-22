@@ -110,7 +110,10 @@ examples = [
 
 with gr.Blocks() as demo:
     with gr.Column(elem_id="col-container"):
-        gr.Image("assets/logo.png", width=600)
+        gr.HTML('''<p align="center"><img src="https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-Image/layered/qwen-image-layered-logo.png" width="400"/><p>''')
+        gr.Markdown("""
+                    The text prompt is intended to describe the overall content of the input image—including elements that may be partially occluded (e.g., you may specify the text hidden behind a foreground object). It is not designed to control the semantic content of individual layers explicitly.
+                    """)
         with gr.Row():
             with gr.Column():
                 input_image = gr.Image(label="Input Image", image_mode="RGBA")
@@ -129,7 +132,7 @@ with gr.Blocks() as demo:
 
                 prompt = gr.Textbox(
                     label="Prompt (Optional)",
-                    placeholder="Please enter the prompt to guide the decomposition (Optional)",
+                    placeholder="Please enter the prompt to describe the image. (Optional)",
                     value="",
                     lines=2,
                 )
