@@ -73,6 +73,8 @@ The following scripts will start a Gradio-based web interface where you can deco
 python src/app.py
 ```
 
+For Google Colab, launch with `--share` to generate a public Gradio URL (e.g., `python src/app.py --share`).
+
 After decomposition, you may want to edit specific layers. The following scripts will launch a Gradio-based web interface where you can edit images with transparency using Qwen-Image-Edit.
 ```bash
 python src/tool/edit_rgba_image.py
