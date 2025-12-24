@@ -77,6 +77,12 @@ After decomposition, you may want to edit specific layers. The following scripts
 ```bash
 python src/tool/edit_rgba_image.py
 ```
+
+After editing the individual decomposed layers, you can use the following script to combine them into a new image. Remember to upload the layers in order—from the bottom layer to the top.
+```bash
+python src/tool/combine_layers.py
+```
+
 ## Showcase
 ### Layered Decomposition in Application
 Given an image, Qwen-Image-Layered can decompose it into several RGBA layers:
