@@ -12,8 +12,95 @@ import zipfile
 
 MAX_SEED = np.iinfo(np.int32).max
 
-pipeline = QwenImageLayeredPipeline.from_pretrained("Qwen/Qwen-Image-Layered")
-pipeline = pipeline.to("cuda", torch.bfloat16)
+def print_device_allocation(pipeline, num_gpus):
+    """打印模型在各个GPU上的分配情况"""
+    print("\n=== 模型设备分配详情 ===")
+    device_usage = {f"cuda:{i}": [] for i in range(num_gpus)}
+    
+    # 检查各个组件
+    components_to_check = [
+        ('transformer', pipeline.transformer if hasattr(pipeline, 'transformer') else None),
+        ('vae', pipeline.vae if hasattr(pipeline, 'vae') else None),
+        ('text_encoder', pipeline.text_encoder if hasattr(pipeline, 'text_encoder') else None),
+    ]
+    
+    for comp_name, comp in components_to_check:
+        if comp is not None:
+            if hasattr(comp, 'hf_device_map'):
+                device_map = comp.hf_device_map
+                print(f"{comp_name}: {device_map}")
+                # 统计每个设备上的层数
+                for layer, device in device_map.items():
+                    if device in device_usage:
+                        device_usage[device].append(f"{comp_name}.{layer}")
+            elif hasattr(comp, 'device'):
+                device = str(comp.device)
+                print(f"{comp_name}: {device}")
+                if device in device_usage:
+                    device_usage[device].append(comp_name)
+    
+    print("\n各GPU上的组件分布:")
+    for device, components in device_usage.items():
+        if components:
+            print(f"  {device}: {len(components)} 个组件")
+    print("=" * 30 + "\n")
+
+# 检查可用GPU数量
+num_gpus = torch.cuda.device_count()
+print(f"检测到 {num_gpus} 张GPU")
+for i in range(num_gpus):
+    gpu_name = torch.cuda.get_device_name(i)
+    gpu_memory = torch.cuda.get_device_properties(i).total_memory / 1024**3
+    print(f"  GPU {i}: {gpu_name}, 显存: {gpu_memory:.1f} GB")
+
+# 使用device_map自动分配模型到多GPU，支持任意数量的GPU（2张、3张、4张等）
+if num_gpus >= 2:
+    # 多GPU模式：使用device_map="balanced"平衡分配到所有可用GPU
+    print(f"使用多GPU模式加载模型（将分配到 {num_gpus} 张GPU）...")
+    try:
+        pipeline = QwenImageLayeredPipeline.from_pretrained(
+            "Qwen/Qwen-Image-Layered",
+            torch_dtype=torch.bfloat16,
+            device_map="balanced"  # 平衡分配到所有可用GPU（支持2张、3张、4张等）
+        )
+        print(f"模型已成功分配到 {num_gpus} 张GPU")
+        # 显示详细的模型组件分配情况
+        print_device_allocation(pipeline, num_gpus)
+    except Exception as e:
+        print(f"多GPU自动分配失败: {e}")
+        print("尝试使用cuda策略...")
+        try:
+            pipeline = QwenImageLayeredPipeline.from_pretrained(
+                "Qwen/Qwen-Image-Layered",
+                torch_dtype=torch.bfloat16,
+                device_map="cuda"  # 使用cuda策略
+            )
+            print(f"模型已使用cuda策略分配到 {num_gpus} 张GPU")
+            print_device_allocation(pipeline, num_gpus)
+        except Exception as e2:
+            print(f"cuda策略也失败: {e2}")
+            print("回退到单GPU模式...")
+            pipeline = QwenImageLayeredPipeline.from_pretrained("Qwen/Qwen-Image-Layered")
+            pipeline = pipeline.to("cuda:0", torch.bfloat16)
+else:
+    # 单GPU模式：传统方式
+    print("使用单GPU模式加载模型...")
+    print("注意：如果模型太大导致显存不足，建议使用多GPU环境")
+    try:
+        pipeline = QwenImageLayeredPipeline.from_pretrained("Qwen/Qwen-Image-Layered")
+        pipeline = pipeline.to("cuda", torch.bfloat16)
+        print("模型已成功加载到单GPU")
+    except RuntimeError as e:
+        if "out of memory" in str(e).lower() or "CUDA out of memory" in str(e):
+            print(f"错误：显存不足！{e}")
+            print("建议：")
+            print("  1. 使用多GPU环境（2张或更多GPU）")
+            print("  2. 或者减少batch size")
+            print("  3. 或者使用CPU卸载（速度较慢）")
+            raise
+        else:
+            raise
+
 pipeline.set_progress_bar_config(disable=None)
 
 def imagelist_to_pptx(img_files):
@@ -71,9 +158,11 @@ def infer(input_image,
     else:
         raise ValueError("Unsupported input_image type: %s" % type(input_image))
     
+    # 确保generator在主GPU上（通常是cuda:0）
+    main_device = "cuda:0" if torch.cuda.is_available() else "cpu"
     inputs = {
         "image": pil_image,
-        "generator": torch.Generator(device='cuda').manual_seed(seed),
+        "generator": torch.Generator(device=main_device).manual_seed(seed),
         "true_cfg_scale": true_guidance_scale,
         "prompt": prompt,
         "negative_prompt": neg_prompt,
