@@ -27,14 +27,21 @@ We are excited to introduce **Qwen-Image-Layered**, a model capable of decomposi
 
 ## Quick Start
 
-1. Make sure your transformers>=4.51.3 (Supporting Qwen2.5-VL)
+### Installation
 
-2. Install the latest version of diffusers
-```
-pip install git+https://github.com/huggingface/diffusers
-pip install python-pptx
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
+
+1. Install uv (if you haven't already):
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+2. Install all dependencies:
+```bash
+uv sync
+```
+
+### Usage
 
 ```python
 from diffusers import QwenImageLayeredPipeline
@@ -70,12 +77,12 @@ for i, image in enumerate(output_image):
 ## Deploy Qwen-Image-Layered
 The following scripts will start a Gradio-based web interface where you can decompose an image and export the layers into a pptx file, where you can edit and move these layers flexibly.
 ```bash
-python src/app.py
+uv run python src/app.py
 ```
 
 After decomposition, you may want to edit specific layers. The following scripts will launch a Gradio-based web interface where you can edit images with transparency using Qwen-Image-Edit.
 ```bash
-python src/tool/edit_rgba_image.py
+uv run python src/tool/edit_rgba_image.py
 ```
 
 After editing the individual decomposed layers, you can use the following script to combine them into a new image. Remember to upload the layers in order—from the bottom layer to the top.
