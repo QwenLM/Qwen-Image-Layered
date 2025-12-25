@@ -9,8 +9,8 @@ from transformers import AutoModelForImageSegmentation
 from diffusers import QwenImageEditPlusPipeline
 
 # --- Model Loading ---
-dtype = torch.bfloat16
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+dtype = torch.bfloat16 if device != "cpu" else torch.float32
 
 # Load the model pipeline
 pipe = QwenImageEditPlusPipeline.from_pretrained("Qwen/Qwen-Image-Edit-2509", torch_dtype=dtype).to(device)
