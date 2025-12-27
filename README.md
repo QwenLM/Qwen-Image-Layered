@@ -100,7 +100,7 @@ We can also replace the second layer from a girl to a boy (The target layer is e
 Here, we revise the text to "Qwen-Image" (The target layer is edited using Qwen-Image-Edit):
 ![Example Image](https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-Image/layered/幻灯片4.JPG)
 
-Furthermore, the layered structure naturally supports elemetary operations. For example, we can delete unwanted objects cleanly:
+Furthermore, the layered structure naturally supports elementary operations. For example, we can delete unwanted objects cleanly:
 ![Example Image](https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-Image/layered/幻灯片5.JPG)
 
 We can also resize an object without distortion:
