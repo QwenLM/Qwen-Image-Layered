@@ -12,8 +12,11 @@ import zipfile
 from psd_tools import PSDImage
 MAX_SEED = np.iinfo(np.int32).max
 
+device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+dtype = torch.bfloat16 if device != "cpu" else torch.float32
+
 pipeline = QwenImageLayeredPipeline.from_pretrained("Qwen/Qwen-Image-Layered")
-pipeline = pipeline.to("cuda", torch.bfloat16)
+pipeline = pipeline.to(device, dtype)
 pipeline.set_progress_bar_config(disable=None)
 
 def imagelist_to_pptx(img_files):
@@ -90,7 +93,7 @@ def infer(input_image,
     
     inputs = {
         "image": pil_image,
-        "generator": torch.Generator(device='cuda').manual_seed(seed),
+        "generator": torch.Generator(device=device).manual_seed(seed),
         "true_cfg_scale": true_guidance_scale,
         "prompt": prompt,
         "negative_prompt": neg_prompt,
