@@ -84,6 +84,8 @@ After editing the individual decomposed layers, you can use the following script
 python src/tool/combine_layers.py
 ```
 
+The first uploaded layer defines the output canvas. If an edited layer was exported at a different size, it is fitted into that canvas and centered instead of raising a size-mismatch error. Resizing uses premultiplied alpha so hidden RGB values in transparent pixels do not create colored fringes.
+
 ### vLLM-Omni
 [vLLM-Omni](https://github.com/vllm-project/vllm-omni) now supports Qwen-Image-Layered. See the [recipes](https://docs.vllm.ai/projects/recipes/en/latest/Qwen/Qwen-Image.html) for up-to-date details.
 
